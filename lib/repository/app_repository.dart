@@ -183,26 +183,31 @@ class LocalAppRepository implements AppRepository {
     final now = DateTime.now();
     return [
       FibuBudget(id: 'budget_1', name: 'Miete', credit: 1200, createdAt: now),
-      FibuBudget(id: 'budget_2', name: 'Lebensmittel', credit: 450, createdAt: now),
+      FibuBudget(
+        id: 'budget_2',
+        name: 'Lebensmittel',
+        credit: 450,
+        createdAt: now,
+      ),
       FibuBudget(id: 'budget_3', name: 'Freizeit', credit: 280, createdAt: now),
     ];
   }
 
   List<FibuCategory> _defaultWhere() => const [
-        FibuCategory(id: 'where_1', name: 'Miete'),
-        FibuCategory(id: 'where_2', name: 'Supermarkt'),
-        FibuCategory(id: 'where_3', name: 'Arbeit'),
-        FibuCategory(id: 'where_4', name: 'Versicherung'),
-        FibuCategory(id: 'where_5', name: 'Bahn'),
-      ];
+    FibuCategory(id: 'where_1', name: 'Miete'),
+    FibuCategory(id: 'where_2', name: 'Supermarkt'),
+    FibuCategory(id: 'where_3', name: 'Arbeit'),
+    FibuCategory(id: 'where_4', name: 'Versicherung'),
+    FibuCategory(id: 'where_5', name: 'Bahn'),
+  ];
 
   List<FibuCategory> _defaultWhat() => const [
-        FibuCategory(id: 'what_1', name: 'Einnahmen'),
-        FibuCategory(id: 'what_2', name: 'Lebensmittel'),
-        FibuCategory(id: 'what_3', name: 'Haushalt'),
-        FibuCategory(id: 'what_4', name: 'Mobilität'),
-        FibuCategory(id: 'what_5', name: 'Freizeit'),
-      ];
+    FibuCategory(id: 'what_1', name: 'Einnahmen'),
+    FibuCategory(id: 'what_2', name: 'Lebensmittel'),
+    FibuCategory(id: 'what_3', name: 'Haushalt'),
+    FibuCategory(id: 'what_4', name: 'Mobilität'),
+    FibuCategory(id: 'what_5', name: 'Freizeit'),
+  ];
 
   List<FibuBooking> _defaultBookings() {
     final today = DateTime.now();
@@ -223,7 +228,10 @@ class LocalAppRepository implements AppRepository {
       FibuBooking(
         id: 'booking_2',
         accountId: 'acc_2',
-        date: month.add(const Duration(days: 3)).toIso8601String().substring(0, 10),
+        date: month
+            .add(const Duration(days: 3))
+            .toIso8601String()
+            .substring(0, 10),
         whereId: 'where_3',
         whatId: 'what_1',
         comment: 'Gehalt',
@@ -234,7 +242,10 @@ class LocalAppRepository implements AppRepository {
       FibuBooking(
         id: 'booking_3',
         accountId: 'acc_1',
-        date: month.add(const Duration(days: 6)).toIso8601String().substring(0, 10),
+        date: month
+            .add(const Duration(days: 6))
+            .toIso8601String()
+            .substring(0, 10),
         whereId: 'where_1',
         whatId: 'what_3',
         comment: 'Miete',

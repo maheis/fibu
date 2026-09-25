@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../app_controller.dart';
 import '../models.dart';
+import 'account_budget_editor_page.dart';
 
 class OverviewPage extends StatelessWidget {
   const OverviewPage({super.key, required this.controller});
@@ -22,9 +23,25 @@ class OverviewPage extends StatelessWidget {
             accent: Colors.green,
           ),
           const SizedBox(height: 16),
-          Text(
-            'Konten',
-            style: Theme.of(context).textTheme.titleLarge,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Konten', style: Theme.of(context).textTheme.titleLarge),
+              TextButton.icon(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => AccountBudgetEditorPage(
+                        controller: controller,
+                        mode: 'account',
+                      ),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.add),
+                label: const Text('Konto'),
+              ),
+            ],
           ),
           const SizedBox(height: 12),
           ...accounts.map((account) {
@@ -43,9 +60,25 @@ class OverviewPage extends StatelessWidget {
             );
           }),
           const SizedBox(height: 20),
-          Text(
-            'Budgets',
-            style: Theme.of(context).textTheme.titleLarge,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Budgets', style: Theme.of(context).textTheme.titleLarge),
+              TextButton.icon(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => AccountBudgetEditorPage(
+                        controller: controller,
+                        mode: 'budget',
+                      ),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.add),
+                label: const Text('Budget'),
+              ),
+            ],
           ),
           const SizedBox(height: 12),
           ...controller.budgets.map((budget) {
@@ -88,16 +121,12 @@ class _SummaryCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              title,
-              style: Theme.of(context).textTheme.labelLarge,
-            ),
+            Text(title, style: Theme.of(context).textTheme.labelLarge),
             const SizedBox(height: 12),
             Text(
               value,
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(context).textTheme.headlineMedium
+                  ?.copyWith(fontWeight: FontWeight.bold),
             ),
           ],
         ),

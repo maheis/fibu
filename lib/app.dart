@@ -56,10 +56,7 @@ class _FibuHomePageState extends State<FibuHomePage> {
     ];
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Fibu'),
-        centerTitle: false,
-      ),
+      appBar: AppBar(title: const Text('Fibu'), centerTitle: false),
       body: pages[_index],
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {

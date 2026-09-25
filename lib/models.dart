@@ -36,13 +36,13 @@ class FibuAccount {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'credit': credit,
-        'onlineBanking': onlineBanking,
-        'isSubAccount': isSubAccount,
-        'createdAt': createdAt.toIso8601String(),
-      };
+    'id': id,
+    'name': name,
+    'credit': credit,
+    'onlineBanking': onlineBanking,
+    'isSubAccount': isSubAccount,
+    'createdAt': createdAt.toIso8601String(),
+  };
 
   factory FibuAccount.fromJson(Map<String, dynamic> json) {
     return FibuAccount(
@@ -51,7 +51,8 @@ class FibuAccount {
       credit: (json['credit'] as num?)?.toDouble() ?? 0.0,
       onlineBanking: (json['onlineBanking'] ?? '').toString(),
       isSubAccount: json['isSubAccount'] == true,
-      createdAt: DateTime.tryParse((json['createdAt'] ?? '').toString()) ??
+      createdAt:
+          DateTime.tryParse((json['createdAt'] ?? '').toString()) ??
           DateTime.now(),
     );
   }
@@ -70,40 +71,51 @@ class FibuBudget {
   final double credit;
   final DateTime createdAt;
 
+  FibuBudget copyWith({
+    String? id,
+    String? name,
+    double? credit,
+    DateTime? createdAt,
+  }) {
+    return FibuBudget(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      credit: credit ?? this.credit,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'credit': credit,
-        'createdAt': createdAt.toIso8601String(),
-      };
+    'id': id,
+    'name': name,
+    'credit': credit,
+    'createdAt': createdAt.toIso8601String(),
+  };
 
   factory FibuBudget.fromJson(Map<String, dynamic> json) {
     return FibuBudget(
       id: (json['id'] ?? '').toString(),
       name: (json['name'] ?? '').toString(),
       credit: (json['credit'] as num?)?.toDouble() ?? 0.0,
-      createdAt: DateTime.tryParse((json['createdAt'] ?? '').toString()) ??
+      createdAt:
+          DateTime.tryParse((json['createdAt'] ?? '').toString()) ??
           DateTime.now(),
     );
   }
 }
 
 class FibuCategory {
-  const FibuCategory({
-    required this.id,
-    required this.name,
-    this.colorValue,
-  });
+  const FibuCategory({required this.id, required this.name, this.colorValue});
 
   final String id;
   final String name;
   final int? colorValue;
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'colorValue': colorValue,
-      };
+    'id': id,
+    'name': name,
+    'colorValue': colorValue,
+  };
 
   factory FibuCategory.fromJson(Map<String, dynamic> json) {
     return FibuCategory(
@@ -139,17 +151,41 @@ class FibuBooking {
 
   bool get isIncome => amount >= 0;
 
+  FibuBooking copyWith({
+    String? id,
+    String? accountId,
+    String? date,
+    String? whereId,
+    String? whatId,
+    String? comment,
+    double? amount,
+    String? budgetId,
+    double? budgetAmount,
+  }) {
+    return FibuBooking(
+      id: id ?? this.id,
+      accountId: accountId ?? this.accountId,
+      date: date ?? this.date,
+      whereId: whereId ?? this.whereId,
+      whatId: whatId ?? this.whatId,
+      comment: comment ?? this.comment,
+      amount: amount ?? this.amount,
+      budgetId: budgetId ?? this.budgetId,
+      budgetAmount: budgetAmount ?? this.budgetAmount,
+    );
+  }
+
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'accountId': accountId,
-        'date': date,
-        'whereId': whereId,
-        'whatId': whatId,
-        'comment': comment,
-        'amount': amount,
-        'budgetId': budgetId,
-        'budgetAmount': budgetAmount,
-      };
+    'id': id,
+    'accountId': accountId,
+    'date': date,
+    'whereId': whereId,
+    'whatId': whatId,
+    'comment': comment,
+    'amount': amount,
+    'budgetId': budgetId,
+    'budgetAmount': budgetAmount,
+  };
 
   factory FibuBooking.fromJson(Map<String, dynamic> json) {
     return FibuBooking(

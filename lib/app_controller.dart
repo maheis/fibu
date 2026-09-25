@@ -26,7 +26,8 @@ class AppController extends ChangeNotifier {
     notifyListeners();
   }
 
-  double get totalBalance => accounts.fold<double>(0, (sum, item) => sum + item.credit);
+  double get totalBalance =>
+      accounts.fold<double>(0, (sum, item) => sum + item.credit);
 
   List<FibuBooking> bookingsForMonth(DateTime month) {
     final start = DateTime(month.year, month.month, 1);
@@ -35,8 +36,7 @@ class AppController extends ChangeNotifier {
     return bookings.where((booking) {
       final bookingDate = DateTime.parse(booking.date);
       return !bookingDate.isBefore(start) && !bookingDate.isAfter(end);
-    }).toList()
-      ..sort((a, b) => b.date.compareTo(a.date));
+    }).toList()..sort((a, b) => b.date.compareTo(a.date));
   }
 
   String accountName(String id) {
@@ -60,7 +60,11 @@ class AppController extends ChangeNotifier {
     return found?.name ?? 'Unbekannt';
   }
 
-  Future<void> addAccount(String name, {String onlineBanking = '', bool isSubAccount = false}) async {
+  Future<void> addAccount(
+    String name, {
+    String onlineBanking = '',
+    bool isSubAccount = false,
+  }) async {
     final nextId = 'acc_${DateTime.now().millisecondsSinceEpoch}';
     final account = FibuAccount(
       id: nextId,
@@ -115,9 +119,25 @@ class AppController extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> updateBooking(FibuBooking booking) async {
+    bookings = bookings
+        .map((item) => item.id == booking.id ? booking : item)
+        .toList();
+    bookings.sort((a, b) => b.date.compareTo(a.date));
+    await _repository.saveBookings(bookings);
+    notifyListeners();
+  }
+
+  Future<void> deleteBooking(String bookingId) async {
+    bookings = bookings.where((item) => item.id != bookingId).toList();
+    await _repository.saveBookings(bookings);
+    notifyListeners();
+  }
+
   Future<void> addSampleBooking() async {
     final today = DateTime.now();
-    final date = '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+    final date =
+        '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
 
     await addBooking(
       accountId: accounts.first.id,
