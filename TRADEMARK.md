@@ -1,8 +1,8 @@
-# SplitBill Trademark and Brand Notice
+# Fibu Trademark and Brand Notice
 
 ## Protected branding
 
-The name **SplitBill**, the SplitBill logo, application icons, artwork,
+The name **Fibu**, the Fibu logo, application icons, artwork,
 screenshots, store graphics, and other brand materials are not covered by the
 MIT License for the source code.
 
@@ -13,7 +13,7 @@ or logo is a registered trademark.
 ## Use in forks and derivatives
 
 The source code may be used under the terms of the MIT License. Modified or
-redistributed versions must not use the name "SplitBill", the SplitBill
+redistributed versions must not use the name "Fibu", the Fibu
 logo, or confusingly similar branding in a way that suggests official origin,
 endorsement, sponsorship, or affiliation with the original project.
 
@@ -23,4 +23,4 @@ written permission from the rights holder.
 
 The MIT License and this notice must remain with copies or substantial
 portions of the source code. Including this notice does not grant permission
-to use the SplitBill brand.
+to use the Fibu brand.
