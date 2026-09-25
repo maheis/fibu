@@ -11,6 +11,8 @@ class BudgetsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final month = DateTime.now();
+
     return Padding(
       padding: const EdgeInsets.all(16),
       child: ListView(
@@ -36,17 +38,53 @@ class BudgetsPage extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Monatsstatus ${month.year}-${month.month.toString().padLeft(2, '0')}',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  Text(
+                    formatMoney(controller.totalForMonth(month, expenseOnly: true)),
+                    style: const TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
           ...controller.budgets.map((budget) {
+            final used = controller.budgetUsedForMonth(budget.id, month);
+            final remaining = controller.budgetRemainingForMonth(budget.id, month);
             return Card(
               child: ListTile(
                 title: Text(budget.name),
-                subtitle: Text('Budget'),
-                trailing: Text(
-                  formatMoney(budget.credit),
-                  style: TextStyle(
-                    color: budget.credit >= 0 ? Colors.green : Colors.red,
-                    fontWeight: FontWeight.bold,
-                  ),
+                subtitle: Text(
+                  'Verbraucht: ${formatMoney(used)} • Verbleibend: ${formatMoney(remaining)}',
+                ),
+                trailing: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      formatMoney(budget.credit),
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      formatMoney(remaining),
+                      style: TextStyle(
+                        color: remaining >= 0 ? Colors.green : Colors.red,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             );

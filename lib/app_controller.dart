@@ -39,6 +39,27 @@ class AppController extends ChangeNotifier {
     }).toList()..sort((a, b) => b.date.compareTo(a.date));
   }
 
+  double totalForMonth(DateTime month, {bool incomeOnly = false, bool expenseOnly = false}) {
+    return bookingsForMonth(month).fold<double>(0, (sum, booking) {
+      if (incomeOnly && booking.amount < 0) return sum;
+      if (expenseOnly && booking.amount > 0) return sum;
+      return sum + booking.amount;
+    });
+  }
+
+  double budgetUsedForMonth(String budgetId, DateTime month) {
+    return bookingsForMonth(month).fold<double>(0, (sum, booking) {
+      if (booking.budgetId != budgetId) return sum;
+      return sum + booking.amount;
+    });
+  }
+
+  double budgetRemainingForMonth(String budgetId, DateTime month) {
+    final budget = budgets.where((item) => item.id == budgetId).firstOrNull;
+    if (budget == null) return 0;
+    return budget.credit + budgetUsedForMonth(budgetId, month);
+  }
+
   String accountName(String id) {
     final found = accounts.where((item) => item.id == id).firstOrNull;
     return found?.name ?? 'Unbekannt';

@@ -12,6 +12,10 @@ class OverviewPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accounts = controller.accounts;
+    final month = DateTime.now();
+    final monthlyNet = controller.totalForMonth(month);
+    final monthlyIncome = controller.totalForMonth(month, incomeOnly: true);
+    final monthlyExpense = controller.totalForMonth(month, expenseOnly: true);
 
     return Padding(
       padding: const EdgeInsets.all(16),
@@ -21,6 +25,32 @@ class OverviewPage extends StatelessWidget {
             title: 'Gesamtguthaben',
             value: formatMoney(controller.totalBalance),
             accent: Colors.green,
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: _SummaryCard(
+                  title: 'Monat netto',
+                  value: formatMoney(monthlyNet),
+                  accent: monthlyNet >= 0 ? Colors.green : Colors.red,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _SummaryCard(
+                  title: 'Einnahmen',
+                  value: formatMoney(monthlyIncome),
+                  accent: Colors.green,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          _SummaryCard(
+            title: 'Ausgaben',
+            value: formatMoney(monthlyExpense),
+            accent: Colors.red,
           ),
           const SizedBox(height: 16),
           Row(
