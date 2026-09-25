@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   viewBox="0 0 576 576"
+   version="1.1"
+   id="svg2"
+   sodipodi:docname="piggy-bank.svg"
+   inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)"
+   width="576"
+   height="576"
+   inkscape:export-filename="piggy-bank.png"
+   inkscape:export-xdpi="11"
+   inkscape:export-ydpi="11"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview2"
+     pagecolor="#505050"
+     bordercolor="#eeeeee"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#505050"
+     inkscape:zoom="1.1453993"
+     inkscape:cx="27.501326"
+     inkscape:cy="242.71012"
+     inkscape:window-width="3440"
+     inkscape:window-height="1353"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg2" />
+  <!-- Font Awesome Pro 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) -->
+  <defs
+     id="defs1">
+    <style
+       id="style1">.fa-secondary{opacity:.4}</style>
+  </defs>
+  <path
+     d="m 484.95778,116.85537 -25.32127,15.15499 a 159.88,159.88 0 0 0 -59.01523,-25.81701 l -22.5852,-74.518672 -27.45783,16.43374 c -25.22688,15.098498 -40.59479,40.029546 -45.01298,66.937982 -7.0604,2.94375 -14.16527,5.77425 -20.92676,9.82106 l -109.8313,65.73496 C 93.44624,239.29765 78.027252,340.45466 119.68678,410.06025 a 159.75,159.75 0 0 0 120.65061,76.96382 l 41.08435,68.64457 a 16,16 0 0 0 21.94579,5.51204 l 54.91565,-32.86748 a 16,16 0 0 0 5.51204,-21.94578 l -24.65061,-41.18674 109.8313,-65.73496 24.65061,41.18674 a 16,16 0 0 0 21.94579,5.51204 l 54.91565,-32.86748 A 16,16 0 0 0 556,391.33124 l -41.45411,-69.26237 a 160.37,160.37 0 0 0 10.77605,-42.904 l 41.80454,-25.02037 a 16,16 0 0 0 5.51204,-21.94578 L 506.90356,122.36741 a 16,16 0 0 0 -21.94578,-5.51204 z m -76.96383,120.65061 a 16,16 0 1 1 5.51205,-21.94578 16,16 0 0 1 -5.51205,21.94578 z"
+     class="fa-secondary"
+     id="path1"
+     style="fill:#ffb74d;fill-opacity:1" />
+  <path
+     d="M 64.617063,405.16698 A 24,24 0 0 1 34.003486,390.50797 c -3.949634,-10.92194 1.181259,-23.10643 11.134721,-29.06366 l 0.858057,-0.51356 a 6,6 0 0 0 2.067017,-8.22967 L 37.792193,335.53994 a 6,6 0 0 0 -8.229668,-2.06701 C 5.107898,348.10923 -6.210242,378.65787 5.167516,404.73644 a 54.64,54.64 0 0 0 3.309711,6.44513 56.08,56.08 0 0 0 76.887273,19.42085 l 34.32228,-20.54217 a 155.05,155.05 0 0 1 -13.54209,-29.1885 L 68.93076,403.1446 a 23.63,23.63 0 0 1 -4.313697,2.02238 z M 391.56021,210.04816 a 16,16 0 1 0 21.94579,5.51204 16,16 0 0 0 -21.94579,-5.51204 z M 152.40413,54.836623 a 96,96 0 0 0 -8.15295,159.309907 162.64,162.64 0 0 1 30.55603,-23.54411 l 109.8313,-65.73496 a 104.31,104.31 0 0 1 11.35784,-5.77218 96.06,96.06 0 0 0 -143.59222,-64.258657 z"
+     class="fa-primary"
+     id="path2"
+     style="fill:#ffb74d;fill-opacity:1" />
+</svg>
