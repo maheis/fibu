@@ -8,12 +8,14 @@ abstract interface class AppRepository {
   Future<List<FibuCategory>> loadWhereCategories();
   Future<List<FibuCategory>> loadWhatCategories();
   Future<List<FibuBooking>> loadBookings();
+  Future<List<FibuRecurringBooking>> loadRecurringBookings();
 
   Future<void> saveAccounts(List<FibuAccount> accounts);
   Future<void> saveBudgets(List<FibuBudget> budgets);
   Future<void> saveWhereCategories(List<FibuCategory> items);
   Future<void> saveWhatCategories(List<FibuCategory> items);
   Future<void> saveBookings(List<FibuBooking> bookings);
+  Future<void> saveRecurringBookings(List<FibuRecurringBooking> bookings);
 }
 
 class LocalAppRepository implements AppRepository {
@@ -26,6 +28,9 @@ class LocalAppRepository implements AppRepository {
   final _whereStore = stringMapStoreFactory.store('booking_where');
   final _whatStore = stringMapStoreFactory.store('booking_what');
   final _bookingsStore = stringMapStoreFactory.store('bookings');
+  final _recurringBookingsStore = stringMapStoreFactory.store(
+    'recurring_bookings',
+  );
 
   @override
   Future<List<FibuAccount>> loadAccounts() async {
@@ -103,6 +108,21 @@ class LocalAppRepository implements AppRepository {
   }
 
   @override
+  Future<List<FibuRecurringBooking>> loadRecurringBookings() async {
+    final values = (await _recurringBookingsStore.find(_database))
+        .map((entry) => FibuRecurringBooking.fromJson(entry.value))
+        .toList();
+
+    if (values.isEmpty) {
+      final seed = _defaultRecurringBookings();
+      await saveRecurringBookings(seed);
+      return seed;
+    }
+
+    return values;
+  }
+
+  @override
   Future<void> saveAccounts(List<FibuAccount> accounts) async {
     await _database.transaction((txn) async {
       await _accountsStore.delete(txn);
@@ -148,6 +168,20 @@ class LocalAppRepository implements AppRepository {
       await _bookingsStore.delete(txn);
       for (final booking in bookings) {
         await _bookingsStore.record(booking.id).put(txn, booking.toJson());
+      }
+    });
+  }
+
+  @override
+  Future<void> saveRecurringBookings(
+    List<FibuRecurringBooking> bookings,
+  ) async {
+    await _database.transaction((txn) async {
+      await _recurringBookingsStore.delete(txn);
+      for (final booking in bookings) {
+        await _recurringBookingsStore
+            .record(booking.id)
+            .put(txn, booking.toJson());
       }
     });
   }
@@ -199,6 +233,7 @@ class LocalAppRepository implements AppRepository {
     FibuCategory(id: 'where_3', name: 'Arbeit'),
     FibuCategory(id: 'where_4', name: 'Versicherung'),
     FibuCategory(id: 'where_5', name: 'Bahn'),
+    FibuCategory(id: 'where_6', name: 'Buchung'),
   ];
 
   List<FibuCategory> _defaultWhat() => const [
@@ -207,7 +242,30 @@ class LocalAppRepository implements AppRepository {
     FibuCategory(id: 'what_3', name: 'Haushalt'),
     FibuCategory(id: 'what_4', name: 'Mobilität'),
     FibuCategory(id: 'what_5', name: 'Freizeit'),
+    FibuCategory(id: 'what_6', name: 'Umbuchung'),
   ];
+
+  List<FibuRecurringBooking> _defaultRecurringBookings() {
+    final today = DateTime.now();
+    return [
+      FibuRecurringBooking(
+        id: 'recurring_1',
+        accountId: 'acc_1',
+        whatId: 'what_3',
+        bookingDay: today.day.clamp(1, 28),
+        amount: -1200.00,
+        period: 'M',
+      ),
+      FibuRecurringBooking(
+        id: 'recurring_2',
+        accountId: 'acc_2',
+        whatId: 'what_1',
+        bookingDay: 25,
+        amount: 1800.00,
+        period: 'M',
+      ),
+    ];
+  }
 
   List<FibuBooking> _defaultBookings() {
     final today = DateTime.now();

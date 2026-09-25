@@ -126,6 +126,62 @@ class FibuCategory {
   }
 }
 
+class FibuRecurringBooking {
+  const FibuRecurringBooking({
+    required this.id,
+    required this.accountId,
+    required this.whatId,
+    required this.bookingDay,
+    required this.amount,
+    required this.period,
+  });
+
+  final String id;
+  final String accountId;
+  final String whatId;
+  final int bookingDay;
+  final double amount;
+  final String period;
+
+  FibuRecurringBooking copyWith({
+    String? id,
+    String? accountId,
+    String? whatId,
+    int? bookingDay,
+    double? amount,
+    String? period,
+  }) {
+    return FibuRecurringBooking(
+      id: id ?? this.id,
+      accountId: accountId ?? this.accountId,
+      whatId: whatId ?? this.whatId,
+      bookingDay: bookingDay ?? this.bookingDay,
+      amount: amount ?? this.amount,
+      period: period ?? this.period,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'accountId': accountId,
+    'whatId': whatId,
+    'bookingDay': bookingDay,
+    'amount': amount,
+    'period': period,
+  };
+
+  factory FibuRecurringBooking.fromJson(Map<String, dynamic> json) {
+    return FibuRecurringBooking(
+      id: (json['id'] ?? '').toString(),
+      accountId: (json['accountId'] ?? '').toString(),
+      whatId: (json['whatId'] ?? '').toString(),
+      bookingDay: (json['bookingDay'] as num?)?.toInt() ?? 1,
+      amount: (json['amount'] as num?)?.toDouble() ?? 0.0,
+      period: (json['period'] ?? 'M').toString(),
+    );
+  }
+}
+
 class FibuBooking {
   const FibuBooking({
     required this.id,

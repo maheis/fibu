@@ -13,6 +13,7 @@ class AppController extends ChangeNotifier {
   List<FibuCategory> whereCategories = const [];
   List<FibuCategory> whatCategories = const [];
   List<FibuBooking> bookings = const [];
+  List<FibuRecurringBooking> recurringBookings = const [];
   bool isLoaded = false;
 
   Future<void> load() async {
@@ -21,6 +22,7 @@ class AppController extends ChangeNotifier {
     whereCategories = await _repository.loadWhereCategories();
     whatCategories = await _repository.loadWhatCategories();
     bookings = await _repository.loadBookings();
+    recurringBookings = await _repository.loadRecurringBookings();
     bookings.sort((a, b) => b.date.compareTo(a.date));
     isLoaded = true;
     notifyListeners();
@@ -39,12 +41,70 @@ class AppController extends ChangeNotifier {
     }).toList()..sort((a, b) => b.date.compareTo(a.date));
   }
 
-  double totalForMonth(DateTime month, {bool incomeOnly = false, bool expenseOnly = false}) {
+  double totalForMonth(
+    DateTime month, {
+    bool incomeOnly = false,
+    bool expenseOnly = false,
+  }) {
     return bookingsForMonth(month).fold<double>(0, (sum, booking) {
       if (incomeOnly && booking.amount < 0) return sum;
       if (expenseOnly && booking.amount > 0) return sum;
       return sum + booking.amount;
     });
+  }
+
+  double totalForYear(
+    int year, {
+    bool incomeOnly = false,
+    bool expenseOnly = false,
+  }) {
+    return bookings
+        .where((booking) {
+          final date = DateTime.parse(booking.date);
+          return date.year == year;
+        })
+        .fold<double>(0, (sum, booking) {
+          if (incomeOnly && booking.amount < 0) return sum;
+          if (expenseOnly && booking.amount > 0) return sum;
+          return sum + booking.amount;
+        });
+  }
+
+  List<int> availableReportYears() {
+    final years =
+        bookings
+            .map((booking) => DateTime.parse(booking.date).year)
+            .toSet()
+            .toList()
+          ..sort((a, b) => b.compareTo(a));
+
+    if (years.isEmpty) return [DateTime.now().year];
+    return years;
+  }
+
+  List<MapEntry<String, double>> yearlyCategoryTotals(int year) {
+    final totals = <String, double>{};
+
+    for (final booking in bookings) {
+      final date = DateTime.parse(booking.date);
+      if (date.year != year) continue;
+      final label = whatName(booking.whatId);
+      totals[label] = (totals[label] ?? 0) + booking.amount;
+    }
+
+    final sorted = totals.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    return sorted;
+  }
+
+  List<MapEntry<int, double>> monthlyTotalsForYear(int year) {
+    final totals = <int, double>{};
+
+    for (var month = 1; month <= 12; month++) {
+      totals[month] = totalForMonth(DateTime(year, month, 1));
+    }
+
+    return totals.entries.toList()..sort((a, b) => a.key.compareTo(b.key));
   }
 
   double budgetUsedForMonth(String budgetId, DateTime month) {
@@ -136,22 +196,174 @@ class AppController extends ChangeNotifier {
     );
 
     bookings = [booking, ...bookings];
+    final accountIndex = accounts.indexWhere((item) => item.id == accountId);
+    if (accountIndex >= 0) {
+      final updatedAccount = accounts[accountIndex].copyWith(
+        credit: accounts[accountIndex].credit + amount,
+      );
+      accounts = accounts
+          .map((item) => item.id == accountId ? updatedAccount : item)
+          .toList();
+    }
     await _repository.saveBookings(bookings);
+    await _repository.saveAccounts(accounts);
     notifyListeners();
   }
 
   Future<void> updateBooking(FibuBooking booking) async {
+    final original = bookings.firstWhereOrNull((item) => item.id == booking.id);
+    if (original != null) {
+      final accountIndex = accounts.indexWhere(
+        (item) => item.id == original.accountId,
+      );
+      if (accountIndex >= 0) {
+        final restoredAccount = accounts[accountIndex].copyWith(
+          credit: accounts[accountIndex].credit - original.amount,
+        );
+        accounts = accounts
+            .map(
+              (item) => item.id == original.accountId ? restoredAccount : item,
+            )
+            .toList();
+      }
+    }
+
     bookings = bookings
         .map((item) => item.id == booking.id ? booking : item)
         .toList();
     bookings.sort((a, b) => b.date.compareTo(a.date));
+
+    final updatedAccountIndex = accounts.indexWhere(
+      (item) => item.id == booking.accountId,
+    );
+    if (updatedAccountIndex >= 0) {
+      final updatedAccount = accounts[updatedAccountIndex].copyWith(
+        credit: accounts[updatedAccountIndex].credit + booking.amount,
+      );
+      accounts = accounts
+          .map((item) => item.id == booking.accountId ? updatedAccount : item)
+          .toList();
+    }
     await _repository.saveBookings(bookings);
+    await _repository.saveAccounts(accounts);
     notifyListeners();
   }
 
   Future<void> deleteBooking(String bookingId) async {
+    final booking = bookings.firstWhereOrNull((item) => item.id == bookingId);
+    if (booking != null) {
+      final accountIndex = accounts.indexWhere(
+        (item) => item.id == booking.accountId,
+      );
+      if (accountIndex >= 0) {
+        final updatedAccount = accounts[accountIndex].copyWith(
+          credit: accounts[accountIndex].credit - booking.amount,
+        );
+        accounts = accounts
+            .map((item) => item.id == booking.accountId ? updatedAccount : item)
+            .toList();
+      }
+    }
     bookings = bookings.where((item) => item.id != bookingId).toList();
     await _repository.saveBookings(bookings);
+    await _repository.saveAccounts(accounts);
+    notifyListeners();
+  }
+
+  Future<void> transferBetweenAccounts({
+    required String fromAccountId,
+    required String toAccountId,
+    required String date,
+    required double amount,
+    String comment = '',
+  }) async {
+    if (fromAccountId.isEmpty ||
+        toAccountId.isEmpty ||
+        fromAccountId == toAccountId ||
+        amount == 0) {
+      return;
+    }
+
+    final transferWhere =
+        whereCategories.where((item) => item.name == 'Buchung').firstOrNull ??
+        (whereCategories.isNotEmpty
+            ? whereCategories.first
+            : const FibuCategory(id: 'where_transfer', name: 'Buchung'));
+    final transferWhat =
+        whatCategories.where((item) => item.name == 'Umbuchung').firstOrNull ??
+        (whatCategories.isNotEmpty
+            ? whatCategories.first
+            : const FibuCategory(id: 'what_transfer', name: 'Umbuchung'));
+
+    final transferNote = comment.trim().isEmpty
+        ? 'Umbuchung von ${accountName(fromAccountId)} nach ${accountName(toAccountId)}'
+        : '${comment.trim()} (Umbuchung von ${accountName(fromAccountId)} nach ${accountName(toAccountId)})';
+
+    final outgoing = FibuBooking(
+      id: 'booking_${DateTime.now().millisecondsSinceEpoch}_out',
+      accountId: fromAccountId,
+      date: date,
+      whereId: transferWhere.id,
+      whatId: transferWhat.id,
+      comment: transferNote,
+      amount: -amount,
+    );
+
+    final incoming = FibuBooking(
+      id: 'booking_${DateTime.now().millisecondsSinceEpoch}_in',
+      accountId: toAccountId,
+      date: date,
+      whereId: transferWhere.id,
+      whatId: transferWhat.id,
+      comment: transferNote,
+      amount: amount,
+    );
+
+    bookings = [incoming, outgoing, ...bookings];
+    bookings.sort((a, b) => b.date.compareTo(a.date));
+
+    final fromIndex = accounts.indexWhere((item) => item.id == fromAccountId);
+    final toIndex = accounts.indexWhere((item) => item.id == toAccountId);
+    if (fromIndex >= 0) {
+      final updated = accounts[fromIndex].copyWith(
+        credit: accounts[fromIndex].credit - amount,
+      );
+      accounts = accounts
+          .map((item) => item.id == fromAccountId ? updated : item)
+          .toList();
+    }
+    if (toIndex >= 0) {
+      final updated = accounts[toIndex].copyWith(
+        credit: accounts[toIndex].credit + amount,
+      );
+      accounts = accounts
+          .map((item) => item.id == toAccountId ? updated : item)
+          .toList();
+    }
+
+    await _repository.saveBookings(bookings);
+    await _repository.saveAccounts(accounts);
+    notifyListeners();
+  }
+
+  Future<void> addRecurringBooking({
+    required String accountId,
+    required String whatId,
+    required int bookingDay,
+    required double amount,
+    required String period,
+  }) async {
+    final recurring = FibuRecurringBooking(
+      id: 'recurring_${DateTime.now().millisecondsSinceEpoch}',
+      accountId: accountId,
+      whatId: whatId,
+      bookingDay: bookingDay,
+      amount: amount,
+      period: period,
+    );
+
+    recurringBookings = [recurring, ...recurringBookings];
+    await _repository.saveRecurringBookings(recurringBookings);
     notifyListeners();
   }
 
@@ -175,4 +387,12 @@ class AppController extends ChangeNotifier {
 
 extension IterableX<T> on Iterable<T> {
   T? get firstOrNull => isEmpty ? null : first;
+
+  T? firstWhereOrNull(bool Function(T element) test) {
+    try {
+      return firstWhere(test);
+    } catch (_) {
+      return null;
+    }
+  }
 }

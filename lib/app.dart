@@ -4,6 +4,9 @@ import 'app_controller.dart';
 import 'pages/bookings_page.dart';
 import 'pages/budgets_page.dart';
 import 'pages/overview_page.dart';
+import 'pages/recurring_booking_page.dart';
+import 'pages/reports_page.dart';
+import 'pages/transfer_page.dart';
 
 class FibuApp extends StatelessWidget {
   const FibuApp({super.key, required this.controller});
@@ -53,6 +56,7 @@ class _FibuHomePageState extends State<FibuHomePage> {
       OverviewPage(controller: widget.controller),
       BookingsPage(controller: widget.controller),
       BudgetsPage(controller: widget.controller),
+      ReportsPage(controller: widget.controller),
     ];
 
     return Scaffold(
@@ -60,16 +64,73 @@ class _FibuHomePageState extends State<FibuHomePage> {
       body: pages[_index],
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-          await widget.controller.addSampleBooking();
-          if (!mounted) return;
-          if (context.mounted) {
+          final action = await showModalBottomSheet<String>(
+            context: context,
+            showDragHandle: true,
+            builder: (bottomSheetContext) {
+              return SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      ListTile(
+                        leading: const Icon(Icons.receipt_long),
+                        title: const Text('Neue Buchung'),
+                        onTap: () =>
+                            Navigator.of(bottomSheetContext).pop('booking'),
+                      ),
+                      ListTile(
+                        leading: const Icon(Icons.swap_horiz),
+                        title: const Text('Umbuchung'),
+                        onTap: () =>
+                            Navigator.of(bottomSheetContext).pop('transfer'),
+                      ),
+                      ListTile(
+                        leading: const Icon(Icons.repeat),
+                        title: const Text('Dauerauftrag'),
+                        onTap: () =>
+                            Navigator.of(bottomSheetContext).pop('recurring'),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+
+          if (!mounted || action == null) return;
+
+          if (action == 'booking') {
+            await widget.controller.addSampleBooking();
+            if (!mounted) return;
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Demo-Buchung angelegt')),
             );
+            return;
           }
+
+          if (action == 'transfer') {
+            if (!mounted) return;
+            await Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => TransferPage(controller: widget.controller),
+              ),
+            );
+            return;
+          }
+
+          if (!mounted) return;
+          await Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) =>
+                  RecurringBookingPage(controller: widget.controller),
+            ),
+          );
         },
         icon: const Icon(Icons.add),
-        label: const Text('Buchung'),
+        label: const Text('Neu'),
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,
@@ -89,6 +150,11 @@ class _FibuHomePageState extends State<FibuHomePage> {
             icon: Icon(Icons.account_balance_wallet_outlined),
             selectedIcon: Icon(Icons.account_balance_wallet),
             label: 'Budgets',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.pie_chart_outline),
+            selectedIcon: Icon(Icons.pie_chart),
+            label: 'Auswertung',
           ),
         ],
       ),

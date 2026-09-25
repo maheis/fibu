@@ -49,7 +49,9 @@ class BudgetsPage extends StatelessWidget {
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   Text(
-                    formatMoney(controller.totalForMonth(month, expenseOnly: true)),
+                    formatMoney(
+                      controller.totalForMonth(month, expenseOnly: true),
+                    ),
                     style: const TextStyle(
                       color: Colors.red,
                       fontWeight: FontWeight.bold,
@@ -62,7 +64,10 @@ class BudgetsPage extends StatelessWidget {
           const SizedBox(height: 12),
           ...controller.budgets.map((budget) {
             final used = controller.budgetUsedForMonth(budget.id, month);
-            final remaining = controller.budgetRemainingForMonth(budget.id, month);
+            final remaining = controller.budgetRemainingForMonth(
+              budget.id,
+              month,
+            );
             return Card(
               child: ListTile(
                 title: Text(budget.name),
