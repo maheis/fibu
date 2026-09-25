@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'app_controller.dart';
+import 'pages/backup_page.dart';
 import 'pages/bookings_page.dart';
 import 'pages/budgets_page.dart';
 import 'pages/overview_page.dart';
@@ -60,10 +61,28 @@ class _FibuHomePageState extends State<FibuHomePage> {
     ];
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Fibu'), centerTitle: false),
+      appBar: AppBar(
+        title: const Text('Fibu'),
+        centerTitle: false,
+        actions: [
+          IconButton(
+            tooltip: 'Backup',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => BackupPage(controller: widget.controller),
+                ),
+              );
+            },
+            icon: const Icon(Icons.archive_outlined),
+          ),
+        ],
+      ),
       body: pages[_index],
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
+          final navigator = Navigator.of(context);
+          final messenger = ScaffoldMessenger.of(context);
           final action = await showModalBottomSheet<String>(
             context: context,
             showDragHandle: true,
@@ -105,7 +124,7 @@ class _FibuHomePageState extends State<FibuHomePage> {
           if (action == 'booking') {
             await widget.controller.addSampleBooking();
             if (!mounted) return;
-            ScaffoldMessenger.of(context).showSnackBar(
+            messenger.showSnackBar(
               const SnackBar(content: Text('Demo-Buchung angelegt')),
             );
             return;
@@ -113,7 +132,7 @@ class _FibuHomePageState extends State<FibuHomePage> {
 
           if (action == 'transfer') {
             if (!mounted) return;
-            await Navigator.of(context).push(
+            await navigator.push(
               MaterialPageRoute(
                 builder: (_) => TransferPage(controller: widget.controller),
               ),
@@ -122,7 +141,7 @@ class _FibuHomePageState extends State<FibuHomePage> {
           }
 
           if (!mounted) return;
-          await Navigator.of(context).push(
+          await navigator.push(
             MaterialPageRoute(
               builder: (_) =>
                   RecurringBookingPage(controller: widget.controller),

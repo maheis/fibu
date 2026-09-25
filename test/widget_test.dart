@@ -66,6 +66,33 @@ void main() {
     expect(controller.recurringBookings.length, greaterThan(0));
     expect(controller.recurringBookings.first.period, 'M');
   });
+
+  test('due recurring bookings are applied once per month', () async {
+    final controller = AppController(_MemoryAppRepository());
+    await controller.load();
+
+    await controller.addRecurringBooking(
+      accountId: controller.accounts.first.id,
+      whatId: controller.whatCategories.first.id,
+      bookingDay: 15,
+      amount: -25,
+      period: 'M',
+    );
+
+    final firstRun = await controller.applyRecurringBookingsForMonth(
+      DateTime(2026, 2),
+    );
+    final secondRun = await controller.applyRecurringBookingsForMonth(
+      DateTime(2026, 2),
+    );
+
+    expect(firstRun, 1);
+    expect(secondRun, 0);
+    expect(
+      controller.bookings.where((booking) => booking.id.contains('recurring_')),
+      hasLength(1),
+    );
+  });
 }
 
 class _MemoryAppRepository implements AppRepository {

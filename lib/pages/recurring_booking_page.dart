@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../app_controller.dart';
+import '../models.dart';
 
 class RecurringBookingPage extends StatefulWidget {
   const RecurringBookingPage({super.key, required this.controller});
@@ -17,6 +18,24 @@ class _RecurringBookingPageState extends State<RecurringBookingPage> {
   int _bookingDay = 1;
   String _period = 'M';
   final TextEditingController _amountController = TextEditingController();
+
+  Future<void> _applyDueRecurringBookings() async {
+    final created = await widget.controller.applyRecurringBookingsForMonth(
+      DateTime.now(),
+    );
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          created == 1
+              ? '1 Dauerbuchung angelegt.'
+              : '$created Dauerbuchungen angelegt.',
+        ),
+      ),
+    );
+    setState(() {});
+  }
 
   @override
   void initState() {
@@ -56,17 +75,65 @@ class _RecurringBookingPageState extends State<RecurringBookingPage> {
   Widget build(BuildContext context) {
     final accounts = widget.controller.accounts;
     final whatItems = widget.controller.whatCategories;
+    final recurringBookings = widget.controller.recurringBookings;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Dauerauftrag')),
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              FilledButton.tonalIcon(
+                onPressed: recurringBookings.isEmpty
+                    ? null
+                    : _applyDueRecurringBookings,
+                icon: const Icon(Icons.playlist_add_check),
+                label: const Text('Fällige für diesen Monat buchen'),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Gespeicherte Daueraufträge',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 8),
+              if (recurringBookings.isEmpty)
+                const Card(
+                  child: Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Text('Noch keine Daueraufträge angelegt.'),
+                  ),
+                )
+              else
+                ...recurringBookings.map((booking) {
+                  return Card(
+                    child: ListTile(
+                      leading: const Icon(Icons.repeat),
+                      title: Text(widget.controller.whatName(booking.whatId)),
+                      subtitle: Text(
+                        '${widget.controller.accountName(booking.accountId)} · ${_periodLabel(booking.period)} · Tag ${booking.bookingDay}',
+                      ),
+                      trailing: Text(
+                        formatMoney(booking.amount),
+                        style: TextStyle(
+                          color: booking.amount >= 0
+                              ? Colors.green
+                              : Colors.red,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+              const SizedBox(height: 20),
+              Text(
+                'Neuer Dauerauftrag',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 12),
               DropdownButtonFormField<String>(
-                value: _accountId.isEmpty ? null : _accountId,
+                initialValue: _accountId.isEmpty ? null : _accountId,
                 decoration: const InputDecoration(labelText: 'Konto'),
                 items: accounts
                     .map(
@@ -80,7 +147,7 @@ class _RecurringBookingPageState extends State<RecurringBookingPage> {
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
-                value: _whatId.isEmpty ? null : _whatId,
+                initialValue: _whatId.isEmpty ? null : _whatId,
                 decoration: const InputDecoration(labelText: 'Was?'),
                 items: whatItems
                     .map(
@@ -94,7 +161,7 @@ class _RecurringBookingPageState extends State<RecurringBookingPage> {
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
-                value: _period,
+                initialValue: _period,
                 decoration: const InputDecoration(labelText: 'Periode'),
                 items: const [
                   DropdownMenuItem(value: 'M', child: Text('Monatlich')),
@@ -148,5 +215,13 @@ class _RecurringBookingPageState extends State<RecurringBookingPage> {
   void dispose() {
     _amountController.dispose();
     super.dispose();
+  }
+
+  String _periodLabel(String period) {
+    return switch (period) {
+      'Q' => 'Quartal',
+      'Y' => 'Jährlich',
+      _ => 'Monatlich',
+    };
   }
 }

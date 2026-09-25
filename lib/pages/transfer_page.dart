@@ -82,7 +82,7 @@ class _TransferPageState extends State<TransferPage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               DropdownButtonFormField<String>(
-                value: _fromAccountId.isEmpty ? null : _fromAccountId,
+                initialValue: _fromAccountId.isEmpty ? null : _fromAccountId,
                 decoration: const InputDecoration(labelText: 'Von Konto'),
                 items: accounts
                     .map(
@@ -97,7 +97,7 @@ class _TransferPageState extends State<TransferPage> {
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
-                value: _toAccountId.isEmpty ? null : _toAccountId,
+                initialValue: _toAccountId.isEmpty ? null : _toAccountId,
                 decoration: const InputDecoration(labelText: 'Nach Konto'),
                 items: accounts
                     .map(

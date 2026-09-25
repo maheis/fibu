@@ -21,7 +21,7 @@ class AppController extends ChangeNotifier {
     budgets = await _repository.loadBudgets();
     whereCategories = await _repository.loadWhereCategories();
     whatCategories = await _repository.loadWhatCategories();
-    bookings = await _repository.loadBookings();
+    bookings = [...await _repository.loadBookings()];
     recurringBookings = await _repository.loadRecurringBookings();
     bookings.sort((a, b) => b.date.compareTo(a.date));
     isLoaded = true;
@@ -365,6 +365,81 @@ class AppController extends ChangeNotifier {
     recurringBookings = [recurring, ...recurringBookings];
     await _repository.saveRecurringBookings(recurringBookings);
     notifyListeners();
+  }
+
+  Future<int> applyRecurringBookingsForMonth(DateTime month) async {
+    final bookingMonth = DateTime(month.year, month.month, 1);
+    final transferWhere =
+        whereCategories.where((item) => item.name == 'Buchung').firstOrNull ??
+        (whereCategories.isNotEmpty
+            ? whereCategories.first
+            : const FibuCategory(id: 'where_recurring', name: 'Buchung'));
+    final newBookings = <FibuBooking>[];
+
+    for (final recurring in recurringBookings) {
+      if (!_isRecurringDue(recurring.period, bookingMonth)) continue;
+
+      final recurringBookingId =
+          'booking_${recurring.id}_${bookingMonth.year}_${bookingMonth.month.toString().padLeft(2, '0')}';
+      if (bookings.any((booking) => booking.id == recurringBookingId) ||
+          newBookings.any((booking) => booking.id == recurringBookingId)) {
+        continue;
+      }
+
+      final date = DateTime(
+        bookingMonth.year,
+        bookingMonth.month,
+        recurring.bookingDay.clamp(1, 28),
+      );
+      newBookings.add(
+        FibuBooking(
+          id: recurringBookingId,
+          accountId: recurring.accountId,
+          date: _formatDate(date),
+          whereId: transferWhere.id,
+          whatId: recurring.whatId,
+          comment: 'Dauerauftrag ${whatName(recurring.whatId)}',
+          amount: recurring.amount,
+        ),
+      );
+    }
+
+    if (newBookings.isEmpty) return 0;
+
+    bookings = [...newBookings, ...bookings]
+      ..sort((a, b) => b.date.compareTo(a.date));
+    for (final booking in newBookings) {
+      final accountIndex = accounts.indexWhere(
+        (item) => item.id == booking.accountId,
+      );
+      if (accountIndex < 0) continue;
+      final updatedAccount = accounts[accountIndex].copyWith(
+        credit: accounts[accountIndex].credit + booking.amount,
+      );
+      accounts = accounts
+          .map((item) => item.id == booking.accountId ? updatedAccount : item)
+          .toList();
+    }
+
+    await _repository.saveBookings(bookings);
+    await _repository.saveAccounts(accounts);
+    notifyListeners();
+    return newBookings.length;
+  }
+
+  bool _isRecurringDue(String period, DateTime month) {
+    return switch (period) {
+      'Q' => (month.month - 1) % 3 == 0,
+      'Y' => month.month == 1,
+      _ => true,
+    };
+  }
+
+  String _formatDate(DateTime date) {
+    final year = date.year.toString().padLeft(4, '0');
+    final month = date.month.toString().padLeft(2, '0');
+    final day = date.day.toString().padLeft(2, '0');
+    return '$year-$month-$day';
   }
 
   Future<void> addSampleBooking() async {
