@@ -11,13 +11,19 @@ import 'package:fibu/app.dart';
 import 'package:fibu/app_controller.dart';
 import 'package:fibu/models.dart';
 import 'package:fibu/repository/app_repository.dart';
+import 'package:fibu/ui_settings.dart';
 
 void main() {
   testWidgets('Fibu app loads the overview page', (WidgetTester tester) async {
     final controller = AppController(_MemoryAppRepository());
     await controller.load();
 
-    await tester.pumpWidget(FibuApp(controller: controller));
+    await tester.pumpWidget(
+      FibuApp(
+        controller: controller,
+        settingsController: UiSettingsController.memory(),
+      ),
+    );
 
     expect(find.text('Fibu'), findsOneWidget);
     expect(find.text('Gesamtguthaben'), findsOneWidget);

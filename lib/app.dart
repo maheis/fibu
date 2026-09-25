@@ -8,31 +8,40 @@ import 'pages/overview_page.dart';
 import 'pages/recurring_booking_page.dart';
 import 'pages/reports_page.dart';
 import 'pages/transfer_page.dart';
+import 'ui_settings.dart';
 
 class FibuApp extends StatelessWidget {
-  const FibuApp({super.key, required this.controller});
+  const FibuApp({
+    super.key,
+    required this.controller,
+    required this.settingsController,
+  });
 
   final AppController controller;
+  final UiSettingsController settingsController;
 
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: controller,
+      animation: Listenable.merge([controller, settingsController]),
       builder: (context, _) {
+        final settings = settingsController.settings;
         return MaterialApp(
           debugShowCheckedModeBanner: false,
           title: 'Fibu',
-          theme: ThemeData(
-            useMaterial3: true,
-            colorSchemeSeed: const Color(0xFF2E7D32),
-            brightness: Brightness.light,
+          theme: buildUnifiedTheme(settings, Brightness.light),
+          darkTheme: buildUnifiedTheme(settings, Brightness.dark),
+          themeMode: settings.useLightTheme ? ThemeMode.light : ThemeMode.dark,
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(
+              context,
+            ).copyWith(textScaler: TextScaler.linear(settings.textScaleFactor)),
+            child: child ?? const SizedBox.shrink(),
           ),
-          darkTheme: ThemeData(
-            useMaterial3: true,
-            colorSchemeSeed: const Color(0xFF81C784),
-            brightness: Brightness.dark,
+          home: FibuHomePage(
+            controller: controller,
+            settingsController: settingsController,
           ),
-          home: FibuHomePage(controller: controller),
         );
       },
     );
@@ -40,9 +49,14 @@ class FibuApp extends StatelessWidget {
 }
 
 class FibuHomePage extends StatefulWidget {
-  const FibuHomePage({super.key, required this.controller});
+  const FibuHomePage({
+    super.key,
+    required this.controller,
+    required this.settingsController,
+  });
 
   final AppController controller;
+  final UiSettingsController settingsController;
 
   @override
   State<FibuHomePage> createState() => _FibuHomePageState();
@@ -65,6 +79,22 @@ class _FibuHomePageState extends State<FibuHomePage> {
         title: const Text('Fibu'),
         centerTitle: false,
         actions: [
+          IconButton(
+            tooltip: 'Einstellungen',
+            onPressed: () async {
+              final result = await Navigator.of(context).push<AppUiSettings>(
+                MaterialPageRoute(
+                  builder: (_) => UiSettingsPage(
+                    initial: widget.settingsController.settings,
+                  ),
+                ),
+              );
+              if (result != null) {
+                await widget.settingsController.update(result);
+              }
+            },
+            icon: const Icon(Icons.settings_outlined),
+          ),
           IconButton(
             tooltip: 'Backup',
             onPressed: () {
